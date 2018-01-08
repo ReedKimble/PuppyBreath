@@ -5,13 +5,14 @@
 Imports System.Windows.Media
 
 Public NotInheritable Class GameAudio
-    'Public Shared ReadOnly [Default] As New GameAudio
 
     Private players As New List(Of GameAudioPlayer)
     Protected Friend resources As New Dictionary(Of String, Uri)
 
-    Protected Friend Sub New()
-        For Each file In IO.Directory.GetFiles(IO.Path.Combine(My.Application.Info.DirectoryPath, "Resources"), "*.wav")
+    Protected Friend Sub LoadResources()
+        Dim resourcePath As String = IO.Path.Combine(My.Application.Info.DirectoryPath, "Resources")
+        If Not IO.Directory.Exists(resourcePath) Then Return
+        For Each file In IO.Directory.GetFiles(resourcePath, "*.wav")
             resources(IO.Path.GetFileNameWithoutExtension(file)) = New Uri(file)
         Next
     End Sub

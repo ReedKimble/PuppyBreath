@@ -15,6 +15,7 @@
         If isRunning Then Exit Function
         _IsRunning = True
         rendererActive = True
+        state.Audio.LoadResources()
         Do
             If isPaused Then
                 Await Task.Delay(250)

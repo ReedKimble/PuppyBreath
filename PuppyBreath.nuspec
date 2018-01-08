@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>ReedKimble.PuppyBreath</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <licenseUrl>https://github.com/ReedKimble/PuppyBreath/blob/master/LICENSE</licenseUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <releaseNotes>Initial NuGet release of PuppyBreath alpha 0.1.0.0</releaseNotes>
+    <copyright>Copyright 2018 Reed Kimble</copyright>
+    <tags>game-engine api framework windows-forms dotnet dot-net vb-net visual-basic gdi gdi-plus</tags>
+  </metadata>
+</package>
