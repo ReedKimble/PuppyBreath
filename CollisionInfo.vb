@@ -1,6 +1,7 @@
 ﻿''' <summary>
 ''' Represents information about the collision of two game objects, including a reference to each object and their point of contact.
 ''' </summary>
+''' <author>Reed Kimble 01/08/2018</author>
 Public Class CollisionInfo
     ''' <summary>
     ''' Gets a reference to the game object on which the collision event occured.

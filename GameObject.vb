@@ -24,6 +24,12 @@ Public Class GameObject
     Public ReadOnly Property Collisions As IEnumerable(Of CollisionInfo) = New List(Of CollisionInfo)
 
     ''' <summary>
+    ''' Gets the unique identifier assigned to this game object instance.
+    ''' </summary>
+    ''' <returns>The unique identifier assigned to this game object instance.</returns>
+    Public ReadOnly Property InstanceId As Guid = Guid.NewGuid()
+
+    ''' <summary>
     ''' Gets a value indicating if this object has been disabled and removed from the scene.
     ''' A Destroyed object can be re-used by calling the Reset() method and adding the object to the scene.
     ''' </summary>
@@ -37,8 +43,33 @@ Public Class GameObject
     ''' <returns></returns>
     Public ReadOnly Property IsInitialized As Boolean
 
+    ''' <summary>
+    ''' Gets or sets a value which points to an external method that will be executed when the object is finished being destroyed.
+    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game object instance without creating a decendent class.
+    ''' </summary>
+    ''' <returns>A delegate sub to be executed when the object is finished being destroyed by the game engine.</returns>
     Public Property OnDestroyed As Action(Of GameState)
+
+    ''' <summary>
+    ''' Gets or sets a value which points to an external method that will be executed when the object is flagged for destruction.
+    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game object instance without creating a decendent class.
+    ''' </summary>
+    ''' <returns>A delegate sub to be executed when the object is flagged for destruction by the game engine.</returns>
     Public Property OnDestroying As Action(Of GameState)
+
+    ''' <summary>
+    ''' Gets or sets a value which points to an external method that will be executed when the object is initialized.
+    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game object instance without creating a decendent class.
+    ''' </summary>
+    ''' <returns>A delegate sub to be executed when the object is initialized by the game engine.</returns>
+    Public Property OnInitialize As Action(Of GameState)
+
+    ''' <summary>
+    ''' Gets or sets a value which points to an external method that will be executed when the object is reset.
+    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game object instance without creating a decendent class.
+    ''' </summary>
+    ''' <returns>A delegate sub to be executed when the object is reset by game logic.</returns>
+    Public Property OnReset As Action(Of GameState)
 
     ''' <summary>
     ''' Gets or sets a value which points to an external method that will be executed when the object is updated.
@@ -93,6 +124,7 @@ Public Class GameObject
     Protected Overridable Sub Initialize(state As GameState)
         If _IsInitialized Then Exit Sub
         _IsInitialized = True
+        OnInitialize?.Invoke(state)
     End Sub
 
     '<dev>:
@@ -106,10 +138,11 @@ Public Class GameObject
     ''' so that it can be reused in the scene. The object is reinitialized on the first
     ''' pass of the game loop after adding the object to the scene.
     ''' </summary>
-    Public Overridable Sub Reset()
+    Public Overridable Sub Reset(state As GameState)
         _IsInitialized = False
         _IsDestroyed = False
         flaggedForDesctruction = False
+        OnReset?.Invoke(state)
     End Sub
 
     ''' <summary>

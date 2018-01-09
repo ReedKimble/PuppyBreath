@@ -1,9 +1,8 @@
-﻿'Add Project References to:
-'   PresentationCore
-'   WindowsBase
-
-Imports System.Windows.Media
-
+﻿''' <summary>
+''' Provides the ability to play music and sound effects. You do not create instances of this class in code,
+''' rather, utilize the instance provided by GameState.
+''' </summary>
+''' <author>Reed Kimble 01/08/2018</author>
 Public NotInheritable Class GameAudio
 
     Private players As New List(Of GameAudioPlayer)
@@ -26,12 +25,19 @@ Public NotInheritable Class GameAudio
         Return gap
     End Function
 
+    ''' <summary>
+    ''' Pause all playing music and sound effects.
+    ''' </summary>
     Public Sub PauseAll()
         For Each p In players
             If p.IsPlaying Then p.Pause()
         Next
     End Sub
 
+    ''' <summary>
+    ''' Play a sound effect. The sound begins playing and ends when the duration is reached.
+    ''' </summary>
+    ''' <param name="effectName">The name of the WAV file in the Resources folder.</param>
     Public Sub PlayEffect(effectName As String)
         If resources.ContainsKey(effectName) Then
             Dim p = GetPlayer()
@@ -39,6 +45,11 @@ Public NotInheritable Class GameAudio
         End If
     End Sub
 
+    ''' <summary>
+    ''' Play a sound as looping music. The sound begins playing and restarts from the beginning when the duration is reached.
+    ''' </summary>
+    ''' <param name="songName">The name of the WAV file in the Resources folder.</param>
+    ''' <returns></returns>
     Public Function PlayMusic(songName As String) As GameAudioPlayer
         If resources.ContainsKey(songName) Then
             Dim p = GetPlayer()
@@ -48,61 +59,12 @@ Public NotInheritable Class GameAudio
         Return Nothing
     End Function
 
+    ''' <summary>
+    ''' Resumes playing all paused music and sound effects.
+    ''' </summary>
     Public Sub ResumePlaying()
         For Each p In players
             If p.IsPlaying Then p.Resume()
         Next
-    End Sub
-End Class
-
-Public Class GameAudioPlayer
-    Inherits MediaPlayer
-
-    Public ReadOnly Property IsPlaying As Boolean
-
-    Private isLooping As Boolean
-    Private lastPlayedResource As Uri
-
-    Public Sub New()
-        AddHandler Me.MediaEnded, AddressOf OnMediaEnded
-        AddHandler Me.MediaOpened, AddressOf OnMediaOpened
-    End Sub
-
-    Public Shadows Sub Play(resource As Uri)
-        If lastPlayedResource IsNot Nothing AndAlso lastPlayedResource = resource Then
-            Position = TimeSpan.Zero
-            MyBase.Play()
-        Else
-            Open(resource)
-            MyBase.Play()
-        End If
-    End Sub
-
-    Public Sub PlayLooping(resource As Uri)
-        isLooping = True
-        Play(resource)
-    End Sub
-
-    Public Sub [Resume]()
-        MyBase.Play()
-    End Sub
-
-    Public Sub StopLoop()
-        isLooping = False
-        [Stop]()
-    End Sub
-
-    Protected Sub OnMediaEnded(sender As Object, e As EventArgs)
-        If isLooping Then
-            Position = TimeSpan.Zero
-            MyBase.Play()
-            Exit Sub
-        End If
-        _IsPlaying = False
-        Close()
-    End Sub
-
-    Protected Sub OnMediaOpened(sender As Object, e As EventArgs)
-        _IsPlaying = True
     End Sub
 End Class

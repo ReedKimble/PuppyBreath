@@ -70,13 +70,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AnimatedSprite.vb" />
+    <Compile Include="Animation\MultiImageAnimation.vb" />
     <Compile Include="Animation\SpriteSheetAnimation.vb" />
     <Compile Include="Animation\AnimationCollection.vb" />
     <Compile Include="Circle.vb" />
     <Compile Include="CollisionInfo.vb" />
     <Compile Include="GameAudio.vb" />
+    <Compile Include="GameAudioPlayer.vb" />
     <Compile Include="GameInput.vb" />
     <Compile Include="GameObject.vb" />
+    <Compile Include="GameObjectCollection.vb" />
     <Compile Include="GameScene.vb" />
     <Compile Include="GameState.vb" />
     <Compile Include="GameTime.vb" />
@@ -105,6 +108,7 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Sprite.vb" />
+    <Compile Include="VariableBank.vb" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="My Project\Resources.resx">

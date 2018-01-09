@@ -1,18 +1,57 @@
-﻿Public Class RenderCanvas
+﻿''' <summary>
+''' Represents the visual rendering area of the game and executes the game loop logic.
+''' </summary>
+''' <author>Reed Kimble 01/08/2018</author>
+Public Class RenderCanvas
+    ''' <summary>
+    ''' This event is raised when the render canvas exits execution of the game loop.
+    ''' </summary>
     Public Event RenderingComplete As EventHandler
 
+    ''' <summary>
+    ''' Gets or sets a value that determines if the control sets the text of its parent to the current frame rate.
+    ''' </summary>
+    ''' <returns>True if enabled, otherwise false.</returns>
     Public Property DebugFpsView As Boolean
+
+    ''' <summary>
+    ''' Gets a value that indicates whether the game loop is running.
+    ''' </summary>
+    ''' <returns>A value that indicates whether the game loop is running.</returns>
     Public ReadOnly Property IsRunning As Boolean
+
+    ''' <summary>
+    ''' Gets a reference to the currently executing game scene.
+    ''' </summary>
+    ''' <returns>A reference to the currently executing game scene.</returns>
     Public ReadOnly Property Scene As GameScene
+
+    ''' <summary>
+    ''' Gets or sets the maximum target framerate. The default is 30 FPS and should generally not be changed.
+    ''' </summary>
+    ''' <returns>The maximum target framerate</returns>
     Public Property TargetFPS As Integer = 30
 
     Private isPaused As Boolean
-    Private state As New GameState
+    Private state As GameState
     Private renderBuffer As BufferedGraphics
     Private rendererActive As Boolean
 
+    Public Sub New()
+
+        ' This call is required by the designer.
+        InitializeComponent()
+
+        ' Add any initialization after the InitializeComponent() call.
+        If Not DesignMode Then state = New GameState
+    End Sub
+
+    ''' <summary>
+    ''' Begins execution of the main game loop.
+    ''' </summary>
+    ''' <returns>A Task which wrapps the executing game loop.</returns>
     Public Async Function BeginAsync() As Task
-        If isRunning Then Exit Function
+        If IsRunning Then Exit Function
         _IsRunning = True
         rendererActive = True
         state.Audio.LoadResources()
@@ -33,11 +72,21 @@
         OnRenderingComplete(EventArgs.Empty)
     End Function
 
+    ''' <summary>
+    ''' Changes the currently executing game scene to the new scene.
+    ''' </summary>
+    ''' <param name="newScene">The new GameScene to begin executing.</param>
     Public Sub ChangeScene(newScene As GameScene)
+        _Scene?.ChangeFrom(state)
         _Scene = newScene
         state.SetScene(newScene)
+        newScene?.ChangeTo(state)
     End Sub
 
+    ''' <summary>
+    ''' Gets a reference to the active GameInput.
+    ''' </summary>
+    ''' <returns>A reference to the active GameInput.</returns>
     Public Function GetGameInput() As GameInput
         Return state.Input
     End Function
@@ -79,7 +128,7 @@
         MyBase.OnSizeChanged(e)
         If renderBuffer IsNot Nothing Then renderBuffer.Dispose()
         renderBuffer = BufferedGraphicsManager.Current.Allocate(CreateGraphics, New Rectangle(0, 0, Width, Height))
-        state.SetBounds(ClientRectangle)
+        state?.SetBounds(ClientRectangle)
     End Sub
 
     Protected Overridable Sub OnUpdate()
@@ -88,6 +137,7 @@
         renderBuffer.Graphics.Clear(BackColor)
         If _Scene IsNot Nothing Then
             If Not _Scene.IsInitialized Then _Scene.Initialize(state)
+            _Scene.Update(state)
             Dim gameObjects = _Scene.GameObjects
             PerformCollisionChecking(gameObjects)
             For i = gameObjects.Count - 1 To 0 Step -1
@@ -106,7 +156,7 @@
         renderBuffer.Render()
     End Sub
 
-    Private Sub PerformCollisionChecking(gameObjects As List(Of GameObject))
+    Private Sub PerformCollisionChecking(gameObjects As GameObjectCollection)
         For Each g In gameObjects
             DirectCast(g.Collisions, List(Of CollisionInfo)).Clear()
         Next
@@ -127,12 +177,18 @@
         Next
     End Sub
 
+    ''' <summary>
+    ''' Pauses the game.
+    ''' </summary>
     Public Sub Pause()
         state.Time.Pause()
         state.Audio.PauseAll()
         isPaused = True
     End Sub
 
+    ''' <summary>
+    ''' Resumes a paused game.
+    ''' </summary>
     Public Sub [Resume]()
         state.Time.Resume()
         state.Audio.ResumePlaying()
@@ -140,6 +196,9 @@
         isPaused = False
     End Sub
 
+    ''' <summary>
+    ''' Stops rendering and causes the game engine to stop execution.
+    ''' </summary>
     Public Sub StopRenderer()
         rendererActive = False
     End Sub
