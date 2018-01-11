@@ -6,6 +6,7 @@
 Public Class VariableBank
     Private flags As New Dictionary(Of String, Boolean)
     Private numbers As New Dictionary(Of String, Single)
+    Private objects As New Dictionary(Of String, GameObject)
     Private texts As New Dictionary(Of String, String)
 
     ''' <summary>
@@ -32,7 +33,21 @@ Public Class VariableBank
             Return GetNumber(name)
         End Get
         Set(value As Single)
-            SetFlag(name, value)
+            SetNumber(name, value)
+        End Set
+    End Property
+
+    ''' <summary>
+    ''' Gets or sets a number value.
+    ''' </summary>
+    ''' <param name="name">The name of the variable.</param>
+    ''' <returns>The numeric value of the variable.</returns>
+    Public Property [Object](name As String) As GameObject
+        Get
+            Return GetObject(name)
+        End Get
+        Set(value As GameObject)
+            SetObject(name, value)
         End Set
     End Property
 
@@ -51,6 +66,16 @@ Public Class VariableBank
     End Property
 
     ''' <summary>
+    ''' Clears all variables and values.
+    ''' </summary>
+    Public Sub Clear()
+        flags.Clear()
+        numbers.Clear()
+        objects.Clear()
+        texts.Clear()
+    End Sub
+
+    ''' <summary>
     ''' Copies all values from this bank into the other bank.
     ''' </summary>
     ''' <param name="other">The variable bank to copy into.</param>
@@ -60,6 +85,9 @@ Public Class VariableBank
         Next
         For Each key In numbers.Keys.ToArray
             other.numbers(key) = numbers(key)
+        Next
+        For Each key In objects.Keys.ToArray
+            other.objects(key) = objects(key)
         Next
         For Each key In texts.Keys.ToArray
             other.texts(key) = texts(key)
@@ -119,6 +147,17 @@ Public Class VariableBank
     End Function
 
     ''' <summary>
+    ''' Gets the value of a GameObject variable.
+    ''' </summary>
+    ''' <param name="name">The name of the variable to get.</param>
+    ''' <returns>The value of the variable.</returns>
+    Public Function GetObject(name As String) As GameObject
+        NullNameCheck(name)
+        If Not objects.ContainsKey(name) Then Return Nothing
+        Return objects(name)
+    End Function
+
+    ''' <summary>
     ''' Gets the value of a text variable.
     ''' </summary>
     ''' <param name="name">The name of the variable to get.</param>
@@ -147,6 +186,16 @@ Public Class VariableBank
     Public Function HasNumber(name As String) As Boolean
         NullNameCheck(name)
         Return numbers.ContainsKey(name)
+    End Function
+
+    ''' <summary>
+    ''' Gets a value indicating if the variable exists.
+    ''' </summary>
+    ''' <param name="name">The name of the variable to check.</param>
+    ''' <returns>True if the variable exists, otherwise false.</returns>
+    Public Function HasObject(name As String) As Boolean
+        NullNameCheck(name)
+        Return objects.ContainsKey(name)
     End Function
 
     ''' <summary>
@@ -191,6 +240,19 @@ Public Class VariableBank
     ''' <param name="name">The name of the variable to set.</param>
     ''' <param name="value">The value to set the variable true.</param>
     ''' <returns>True if the variable is new or its value has changed, otherwise false.</returns>
+    Public Function SetObject(name As String, value As GameObject) As Boolean
+        NullNameCheck(name)
+        Dim changed = If(Not objects.ContainsKey(name), True, objects(name) IsNot value)
+        objects(name) = value
+        Return changed
+    End Function
+
+    ''' <summary>
+    ''' Sets the value of a variable.
+    ''' </summary>
+    ''' <param name="name">The name of the variable to set.</param>
+    ''' <param name="value">The value to set the variable true.</param>
+    ''' <returns>True if the variable is new or its value has changed, otherwise false.</returns>
     Public Function SetText(name As String, value As String) As Boolean
         NullNameCheck(name)
         If value Is Nothing Then value = String.Empty
@@ -209,6 +271,9 @@ Public Class VariableBank
         Next
         For Each key In numbers.Keys.ToArray
             If Not other.numbers.ContainsKey(key) Then other.numbers(key) = numbers(key)
+        Next
+        For Each key In objects.Keys.ToArray
+            If Not other.objects.ContainsKey(key) Then other.objects(key) = objects(key)
         Next
         For Each key In texts.Keys.ToArray
             If Not other.texts.ContainsKey(key) Then other.texts(key) = texts(key)
@@ -329,6 +394,14 @@ Public Class VariableBank
             If Not numbers.ContainsKey(key) Then other.numbers.Remove(key)
         Next
 
+        originalKeys = other.objects.Keys.ToArray
+        For Each key In objects.Keys.ToArray
+            other.objects(key) = objects(key)
+        Next
+        For Each key In originalKeys
+            If Not objects.ContainsKey(key) Then other.objects.Remove(key)
+        Next
+
         originalKeys = other.texts.Keys.ToArray
         For Each key In texts.Keys.ToArray
             other.texts(key) = texts(key)
@@ -348,6 +421,9 @@ Public Class VariableBank
         Next
         For Each key In numbers.Keys.ToArray
             If other.numbers.ContainsKey(key) Then other.numbers(key) = numbers(key)
+        Next
+        For Each key In objects.Keys.ToArray
+            If other.objects.ContainsKey(key) Then other.objects(key) = objects(key)
         Next
         For Each key In texts.Keys.ToArray
             If other.texts.ContainsKey(key) Then other.texts(key) = texts(key)

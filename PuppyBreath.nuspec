@@ -9,21 +9,52 @@
     <licenseUrl>https://github.com/ReedKimble/PuppyBreath/blob/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Update to PuppyBreath alpha 0.2.0.0.
-    !! This release contains minor breaking changes from alpha 0.1.x versions !!
-    Existing code is easily updated by adding readily-available parameter values to method calls.
-    No major refactoring is necessary.
-    
-    [Update Notes]
-    + Finished intellisense comments
-    + Added missing delegate members to GameObject
-    + Changed GameObject.Destroy() method to take a GameState parameter
-    + Changed the definition of IAnimation.Update() to include a reference to the target AnimatedSprite
-    + Created VariableBank class and added instances to GameState and GameScene
-    + Added scene change delegate members to GameScene
-    + Added MultiImageAnimation
-    + Create GameObjectCollection and changed GameScene to use it; this collection ignores attempts to add game objects which already exist in the collection
-    + Added frame generation method and shared instance creation method to SpriteSheetAnimation
+    <releaseNotes>
+      Update to PuppyBreath alpha 0.3.0.0.
+      
+      [Update Notes]
+      This update corrects a couple of bugs and adds new features. Some existing functionality
+      has changed and existing projects will likely require code modifications.
+      
+      [[Bug Fixes]]
+      + "Other" collision object was being given the wrong collision info instance.
+      + Number property in VariableBank now correctly sets number value instead of flag.
+      + Cleared the collision list on a game object when it is reset.
+
+      [[Changes]]
+      + Made signficant changes to scene handling.
+      + Added GameSceneManager class and placed instance on GameState.
+      + Removed Scene property from RenderCanvas, replacing with CurrentScene on
+        GameSceneManager.
+      + Moved ChangeScene() method into GameSceneManager.
+      + Modified main game loop to support new scene change mechanics.
+        Scene changes are now queued so that the current scene can process an update
+        while being destroyed. On the update following the requested scene change,
+        the new scene is initialized and displayed.
+        !# You will need to refactor any code which previously accessed the Scene.
+      + Split GameObject Initialization into two parts: Added LoadOnce/OnLoadOnce
+        which is called by Initialize() one time over the objects lifetime (managed
+        code lifetime). Initialize() is called any time the game object is reset and
+        added to a scene. Code that should execute once and only once (eg loading
+        animations) can be placed in the LoadOnce() override/delegate.
+        !# You may wish to refactor initialization code.
+      + Added GameState parameter to Sprite Render/OnPostRender signature.
+        !# You will need to edit any sprite drawing code.
+      + Added GameObject support to VariableBank.
+      + Added Clear() method to VariableBank.
+      + Added Clear() method to ObjectCache.
+      + Moved AudioPlayers dictionary from GameScene onto GameState.
+        !# You will need to refactor any audio-playing code.
+      + Removed OnChangeFrom() OnChangeTo() delegates from GameScene.
+        The functionality is replaced with OnInitialize()/OnLoadOnce()
+        and OnReset().
+        !#  You will need to refactor any scene-changing code.
+      + Scenes are now reset automatically when they are no longer the current
+        scene. All objects in the scene at the time have Destroy() called on them.
+      + GameAudioPlayers now add themselves to GameAudio's interal players
+        collection after they begin to play, rather than immediately upon creation.
+      + Added IsLoop property to animations to support a one-time animation.
+        !# You may need to edit your code to provide an IsLoop variable value.
     </releaseNotes>
     <copyright>Copyright 2018 Reed Kimble</copyright>
     <tags>game-engine api framework windows-forms dotnet dot-net vb-net visual-basic gdi gdi-plus</tags>

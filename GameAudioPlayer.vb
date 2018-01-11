@@ -16,11 +16,15 @@ Public Class GameAudioPlayer
     ''' </summary>
     ''' <returns>True if the player is playing, otherwise false.</returns>
     Public ReadOnly Property IsPlaying As Boolean
+    Public ReadOnly Property IsLooping As Boolean
 
-    Private isLooping As Boolean
+    Private addedToAudio As Boolean
+
     Private lastPlayedResource As Uri
+    Private gameAudio As GameAudio
 
-    Public Sub New()
+    Protected Friend Sub New(audio As GameAudio)
+        gameAudio = audio
         AddHandler Me.MediaEnded, AddressOf OnMediaEnded
         AddHandler Me.MediaOpened, AddressOf OnMediaOpened
     End Sub
@@ -37,6 +41,10 @@ Public Class GameAudioPlayer
             Open(resource)
             MyBase.Play()
         End If
+        If Not addedToAudio Then
+            gameAudio.players.Add(Me)
+            addedToAudio = True
+        End If
     End Sub
 
     ''' <summary>
@@ -44,7 +52,7 @@ Public Class GameAudioPlayer
     ''' </summary>
     ''' <param name="resource">A Uri pointing to the WAV file in the Resources folder.</param>
     Public Sub PlayLooping(resource As Uri)
-        isLooping = True
+        _IsLooping = True
         Play(resource)
     End Sub
 
@@ -60,14 +68,14 @@ Public Class GameAudioPlayer
     ''' Use StopLoop() to end a looping music track.
     ''' </summary>
     Public Sub StopLoop()
-        isLooping = False
-        [Stop]()
+        _IsLooping = False
+        _IsPlaying = False
+        MyBase.Stop()
     End Sub
 
     Protected Sub OnMediaEnded(sender As Object, e As EventArgs)
-        If isLooping Then
+        If _IsLooping Then
             Position = TimeSpan.Zero
-            MyBase.Play()
             Exit Sub
         End If
         _IsPlaying = False

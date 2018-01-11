@@ -4,12 +4,6 @@
 ''' <author>Reed Kimble 01/08/2018</author>
 Public Class GameScene
     ''' <summary>
-    ''' Gets a collection of named audio players that can be used to associate playing audio with the scene.
-    ''' </summary>
-    ''' <returns>A dictionary of String/GameAudioPlayer key-value pairs.</returns>
-    Public ReadOnly Property AudioPlayers As New Dictionary(Of String, GameAudioPlayer)
-
-    ''' <summary>
     ''' Gets the collection of game objects currently associated with (loaded into) the scene.
     ''' </summary>
     ''' <returns>A list of GameObject instances currently loaded into the scene.</returns>
@@ -22,25 +16,25 @@ Public Class GameScene
     Public ReadOnly Property IsInitialized As Boolean
 
     ''' <summary>
-    ''' Gets or sets a value which points to an external method that will be executed when the current scene is changed from this instance.
-    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game scene instance without creating a decendent class.
-    ''' </summary>
-    ''' <returns>A delegate sub to be executed when the current scene is changed from this instance.</returns>
-    Public Property OnChangeFrom As Action(Of GameState)
-
-    ''' <summary>
-    ''' Gets or sets a value which points to an external method that will be executed when the current scene is changed to this instance.
-    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game scene instance without creating a decendent class.
-    ''' </summary>
-    ''' <returns>A delegate sub to be executed when the current scene is changed to this instance.</returns>
-    Public Property OnChangeTo As Action(Of GameState)
-
-    ''' <summary>
     ''' Gets or sets a value which points to an external method that will be executed when this scene is intialized.
     ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game scene instance without creating a decendent class.
     ''' </summary>
     ''' <returns>A delegate sub to be executed when the current scene is intialized.</returns>
     Public Property OnInitialize As Action(Of GameState)
+
+    ''' <summary>
+    ''' Gets or sets a value which points to an external method that will be executed when the scene is initialized for the first time.
+    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game scene instance without creating a decendent class.
+    ''' </summary>
+    ''' <returns>A delegate sub to be executed when the scene is initialized by the game engine.</returns>
+    Public Property OnLoadOnce As Action(Of GameState)
+
+    ''' <summary>
+    ''' Gets or sets a value which points to an external method that will be executed when the scene is reset.
+    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game scene instance without creating a decendent class.
+    ''' </summary>
+    ''' <returns>A delegate sub to be executed when the scene is reset by game logic.</returns>
+    Public Property OnReset As Action(Of GameState)
 
     ''' <summary>
     ''' Gets or sets a value which points to an external method that will be executed when this scene is updated.
@@ -61,18 +55,36 @@ Public Class GameScene
     ''' <returns>A VariableBank containing name-keyed collections of flags, numbers and text.</returns>
     Public ReadOnly Property Variables As New VariableBank
 
-    Protected Friend Overridable Sub ChangeFrom(state As GameState)
-        OnChangeFrom?.Invoke(state)
-    End Sub
-
-    Protected Friend Overridable Sub ChangeTo(state As GameState)
-        OnChangeTo?.Invoke(state)
-    End Sub
+    Private loadOnceExecuted As Boolean
 
     Protected Friend Overridable Sub Initialize(state As GameState)
         If _IsInitialized Then Return
         OnInitialize?.Invoke(state)
         _IsInitialized = True
+        If Not loadOnceExecuted Then
+            loadOnceExecuted = True
+            LoadOnce(state)
+        End If
+    End Sub
+
+    Protected Friend Overridable Sub LoadOnce(state As GameState)
+        OnLoadOnce?.Invoke(state)
+    End Sub
+
+    ''' <summary>
+    ''' Resets a destroyed game scene by clearing the initialized flag and destroying all game objects
+    ''' so that it can be reused. The scene is reinitialized on the first pass of the game loop after 
+    ''' showing scene again.
+    ''' </summary>
+    Protected Friend Overridable Sub RequestReset(state As GameState)
+        For Each g In GameObjects
+            g.Destroy(state)
+        Next
+    End Sub
+
+    Protected Friend Sub FinializeReset(state As GameState)
+        _IsInitialized = False
+        OnReset?.Invoke(state)
     End Sub
 
     Protected Friend Overridable Sub Update(state As GameState)

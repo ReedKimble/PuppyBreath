@@ -9,6 +9,11 @@ Public Class GameState
     ''' </summary>
     ''' <returns>The active GameAudio for the game.</returns>
     Public ReadOnly Property Audio As New GameAudio
+    ''' <summary>
+    ''' Gets a collection of named audio players that can be used to associate playing audio with the scene.
+    ''' </summary>
+    ''' <returns>A dictionary of String/GameAudioPlayer key-value pairs.</returns>
+    Public ReadOnly Property AudioPlayers As New Dictionary(Of String, GameAudioPlayer)
 
     ''' <summary>
     ''' Gets an object providing caching services for the reuse of game objects in a scene.
@@ -40,6 +45,8 @@ Public Class GameState
     ''' <returns>A reference to the current scene loaded in the RenderCanvas.</returns>
     Public ReadOnly Property Scene As GameScene
 
+    Public ReadOnly Property SceneManager As GameSceneManager
+
     ''' <summary>
     ''' Gets the active GameTime instance for the game. Use this to track execution time and calculate movement and
     ''' other action-over-time logic.
@@ -58,7 +65,8 @@ Public Class GameState
         _CanvasBounds = bounds
     End Sub
 
-    Protected Friend Sub SetScene(gameScene As GameScene)
+    Protected Friend Sub SetScene(gameScene As GameScene, manager As GameSceneManager)
         _Scene = gameScene
+        _SceneManager = manager
     End Sub
 End Class

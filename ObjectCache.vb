@@ -20,6 +20,13 @@ Public Class ObjectCache
     End Function
 
     ''' <summary>
+    ''' Removes all cached game objects.
+    ''' </summary>
+    Public Sub Clear()
+        typeLists.Clear()
+    End Sub
+
+    ''' <summary>
     ''' Gets an instance of a GameObject. If one has been previously destroyed, it is reset and
     ''' returned, otherwise a new instance is created.
     ''' </summary>

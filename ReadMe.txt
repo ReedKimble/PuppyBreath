@@ -27,3 +27,10 @@ Abstract:
 
 Walkthrough/Tutorial & Discussion:
 	https://social.msdn.microsoft.com/Forums/en-US/2440752f-66e5-4995-93c4-e018ce43efc9/how-to-get-started-with-video-game-development-in-visual-basic-net-using-the-puppybreath?forum=vbgeneral
+
+Q: What if the RenderCanvas does not appear in the Toolbox?
+A: Right click the Toolbox and select "Choose items..."
+   When the dialog loads, click the browse button.
+   Navigate to the current solution directory and then to packages\ReedKimble.PuppyBreath.0.2.0\lib\net461
+   Select the PuppyBreath.dll file and click OK.  The RenderCanvas will be added in the dialog. Click OK
+   to return to Visual Studio and the icon will then appear in the Toolbox.

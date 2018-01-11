@@ -65,6 +65,13 @@ Public Class GameObject
     Public Property OnInitialize As Action(Of GameState)
 
     ''' <summary>
+    ''' Gets or sets a value which points to an external method that will be executed when the object is initialized for the first time.
+    ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game object instance without creating a decendent class.
+    ''' </summary>
+    ''' <returns>A delegate sub to be executed when the object is initialized by the game engine.</returns>
+    Public Property OnLoadOnce As Action(Of GameState)
+
+    ''' <summary>
     ''' Gets or sets a value which points to an external method that will be executed when the object is reset.
     ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game object instance without creating a decendent class.
     ''' </summary>
@@ -88,6 +95,8 @@ Public Class GameObject
     ' This flag will be set internally when Destroy() is called to indicate that the game object is
     ' ready for destruction and should be removed by the game engine on the next pass of the game loop.
     Private flaggedForDesctruction As Boolean
+
+    Private loadOnceExecuted As Boolean
 
     ''' <summary>
     ''' Flags the game object for destruction by the game engine. The object will be disabled and
@@ -125,6 +134,10 @@ Public Class GameObject
         If _IsInitialized Then Exit Sub
         _IsInitialized = True
         OnInitialize?.Invoke(state)
+        If Not loadOnceExecuted Then
+            loadOnceExecuted = True
+            LoadOnce(state)
+        End If
     End Sub
 
     '<dev>:
@@ -133,15 +146,20 @@ Public Class GameObject
         Return flaggedForDesctruction
     End Function
 
+    Protected Overridable Sub LoadOnce(state As GameState)
+        OnLoadOnce?.Invoke(state)
+    End Sub
+
     ''' <summary>
     ''' Resets a destroyed game object by clearing the initialized, destroyed, and flaggedForDestruction flags
-    ''' so that it can be reused in the scene. The object is reinitialized on the first
+    ''' and collisions so that it can be reused in the scene. The object is reinitialized on the first
     ''' pass of the game loop after adding the object to the scene.
     ''' </summary>
     Public Overridable Sub Reset(state As GameState)
         _IsInitialized = False
         _IsDestroyed = False
         flaggedForDesctruction = False
+        DirectCast(_Collisions, List(Of CollisionInfo)).Clear()
         OnReset?.Invoke(state)
     End Sub
 

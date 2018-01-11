@@ -6,6 +6,7 @@
     Public Interface IAnimation
         Property Active As Boolean
         Property AnimationTime As Single
+        Property IsLoop As Boolean
         Property Name As String
         Function GetFramePosition() As Point
         Sub Update(target As AnimatedSprite, state As GameState)

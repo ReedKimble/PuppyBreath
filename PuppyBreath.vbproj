@@ -107,6 +107,7 @@
     <Compile Include="RenderCanvas.vb">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Include="GameSceneManager.vb" />
     <Compile Include="Sprite.vb" />
     <Compile Include="VariableBank.vb" />
   </ItemGroup>

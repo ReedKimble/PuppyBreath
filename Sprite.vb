@@ -28,7 +28,7 @@ Public Class Sprite
     ''' Set this to a Sub(state As GameState) lambda method to add functionality to a game object instance without creating a decendent class.
     ''' </summary>
     ''' <returns>A delegate sub to be executed after the sprite is drawn.</returns>
-    Public Property OnPostRender As Action(Of Graphics)
+    Public Property OnPostRender As Action(Of Graphics, GameState)
 
     ''' <summary>
     ''' Gets or sets a value determining the rotation angle at which the sprite will be drawn. Sprites are
@@ -64,7 +64,7 @@ Public Class Sprite
         Return New Circle(Position, CollisionRadius * Scale)
     End Function
 
-    Protected Friend Overridable Sub Render(g As Graphics)
+    Protected Friend Overridable Sub Render(g As Graphics, state As GameState)
         If IsDestroyed Then Return
         If Image IsNot Nothing Then
             Dim srcBounds As New Rectangle(FrameLocation, FrameSize)
@@ -75,7 +75,7 @@ Public Class Sprite
             g.DrawImage(Image, dstBounds, srcBounds, GraphicsUnit.Pixel)
             g.ResetTransform()
         End If
-        OnPostRender?.Invoke(g)
+        OnPostRender?.Invoke(g, state)
     End Sub
 
 End Class

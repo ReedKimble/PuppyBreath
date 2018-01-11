@@ -12,6 +12,8 @@
         ''' <returns>True if the animation should be played, otherwise false.</returns>
         Public Property Active As Boolean = True Implements IAnimation.Active
 
+        Public Property IsLoop As Boolean Implements IAnimation.IsLoop
+
         ''' <summary>
         ''' Gets or sets the name of the animation.
         ''' </summary>
@@ -43,11 +45,12 @@
         ''' <param name="frameCount">The number of frames in this animation.</param>
         ''' <param name="gridHorizontal">True if the frames are laid out Horizontally in the spritesheet, otherwise False if the frames are vertical.</param>
         ''' <returns>The newly configured SpriteSheetAnimation.</returns>
-        Public Shared Function CreateAnimation(name As String, time As Single, offset As Point, frameSize As Size, frameCount As Integer, gridHorizontal As Boolean) As SpriteSheetAnimation
+        Public Shared Function CreateAnimation(name As String, time As Single, offset As Point, frameSize As Size, frameCount As Integer, gridHorizontal As Boolean, looping As Boolean) As SpriteSheetAnimation
             Dim anim As New SpriteSheetAnimation
             anim.Name = name
             anim.AnimationTime = time
             anim.LoadFramesByGrid(offset, frameSize, frameCount, gridHorizontal)
+            anim.IsLoop = looping
             Return anim
         End Function
 
@@ -79,12 +82,22 @@
 
         Protected Friend Overridable Sub Update(target As AnimatedSprite, state As GameState) Implements IAnimation.Update
             If Frames.Count = 0 Then Return
-            If Not Active Then frameIndex = 0 : Return
+            If Not Active Then
+                If IsLoop Then frameIndex = 0
+                Return
+            End If
             frameRemaining -= state.Time.LastFrame
             If frameRemaining <= 0 Then
                 frameRemaining = AnimationTime / Frames.Count
                 frameIndex += 1
-                If frameIndex >= Frames.Count Then frameIndex = 0
+                If frameIndex >= Frames.Count Then
+                    If IsLoop Then
+                        frameIndex = 0
+                    Else
+                        frameIndex -= 1
+                        Active = False
+                    End If
+                End If
             End If
         End Sub
     End Class

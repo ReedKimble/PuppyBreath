@@ -5,7 +5,7 @@
 ''' <author>Reed Kimble 01/08/2018</author>
 Public NotInheritable Class GameAudio
 
-    Private players As New List(Of GameAudioPlayer)
+    Protected Friend players As New List(Of GameAudioPlayer)
     Protected Friend resources As New Dictionary(Of String, Uri)
 
     Protected Friend Sub LoadResources()
@@ -20,9 +20,7 @@ Public NotInheritable Class GameAudio
         For Each p In players
             If Not p.IsPlaying Then Return p
         Next
-        Dim gap As New GameAudioPlayer
-        players.Add(gap)
-        Return gap
+        Return New GameAudioPlayer(Me)
     End Function
 
     ''' <summary>
@@ -59,6 +57,13 @@ Public NotInheritable Class GameAudio
         Return Nothing
     End Function
 
+    Public Sub ChangeMusic(player As GameAudioPlayer, songName As String)
+        StopPlayer(player)
+        If resources.ContainsKey(songName) Then
+            player.PlayLooping(resources(songName))
+        End If
+    End Sub
+
     ''' <summary>
     ''' Resumes playing all paused music and sound effects.
     ''' </summary>
@@ -66,5 +71,9 @@ Public NotInheritable Class GameAudio
         For Each p In players
             If p.IsPlaying Then p.Resume()
         Next
+    End Sub
+
+    Public Sub StopPlayer(player As GameAudioPlayer)
+        If player.IsLooping Then player.StopLoop() Else player.Stop()
     End Sub
 End Class

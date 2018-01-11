@@ -20,11 +20,8 @@ Public Class RenderCanvas
     ''' <returns>A value that indicates whether the game loop is running.</returns>
     Public ReadOnly Property IsRunning As Boolean
 
-    ''' <summary>
-    ''' Gets a reference to the currently executing game scene.
-    ''' </summary>
-    ''' <returns>A reference to the currently executing game scene.</returns>
-    Public ReadOnly Property Scene As GameScene
+
+    Public ReadOnly Property SceneManager As New GameSceneManager(Me)
 
     ''' <summary>
     ''' Gets or sets the maximum target framerate. The default is 30 FPS and should generally not be changed.
@@ -33,7 +30,8 @@ Public Class RenderCanvas
     Public Property TargetFPS As Integer = 30
 
     Private isPaused As Boolean
-    Private state As GameState
+    Private isSceneChangeQueued As Boolean
+    Protected Friend state As GameState
     Private renderBuffer As BufferedGraphics
     Private rendererActive As Boolean
 
@@ -71,17 +69,6 @@ Public Class RenderCanvas
         _IsRunning = False
         OnRenderingComplete(EventArgs.Empty)
     End Function
-
-    ''' <summary>
-    ''' Changes the currently executing game scene to the new scene.
-    ''' </summary>
-    ''' <param name="newScene">The new GameScene to begin executing.</param>
-    Public Sub ChangeScene(newScene As GameScene)
-        _Scene?.ChangeFrom(state)
-        _Scene = newScene
-        state.SetScene(newScene)
-        newScene?.ChangeTo(state)
-    End Sub
 
     ''' <summary>
     ''' Gets a reference to the active GameInput.
@@ -133,32 +120,45 @@ Public Class RenderCanvas
 
     Protected Overridable Sub OnUpdate()
         state.Time.Update()
-        state.Input.Update(PointToClient(MousePosition))
         renderBuffer.Graphics.Clear(BackColor)
-        If _Scene IsNot Nothing Then
-            If Not _Scene.IsInitialized Then _Scene.Initialize(state)
-            _Scene.Update(state)
-            Dim gameObjects = _Scene.GameObjects
-            PerformCollisionChecking(gameObjects)
+        Dim scene = SceneManager.CurrentScene
+        If scene IsNot Nothing Then
+            If Not scene.IsInitialized AndAlso Not SceneManager.IsSceneChangeQueued Then scene.Initialize(state)
+            scene.Update(state)
+            Dim gameObjects = scene.GameObjects
             For i = gameObjects.Count - 1 To 0 Step -1
                 Dim gameObject = gameObjects(i)
                 If gameObject.IsFlaggedForDestruction Then
-                    _Scene.GameObjects.RemoveAt(i)
+                    scene.GameObjects.RemoveAt(i)
                     gameObject.FinializeDestruction(state)
-                Else
+                ElseIf Not SceneManager.IsSceneChangeQueued Then
                     gameObject.Update(state)
                 End If
             Next
-            For Each gobj In (From g In gameObjects Where TypeOf (g) Is Sprite Let s = DirectCast(g, Sprite) Where g.IsDestroyed = False Order By s.ZOrder Select s)
-                gobj.Render(renderBuffer.Graphics)
-            Next
+            If Not SceneManager.IsSceneChangeQueued Then
+                PerformCollisionChecking(gameObjects)
+                For Each gobj In (From g In gameObjects Where TypeOf (g) Is Sprite Let s = DirectCast(g, Sprite) Where g.IsDestroyed = False Order By s.ZOrder Select s)
+                    gobj.Render(renderBuffer.Graphics, state)
+                Next
+            End If
         End If
         renderBuffer.Render()
+        state.Input.Update(PointToClient(MousePosition))
+        If SceneManager.IsSceneChangeQueued Then
+            If isSceneChangeQueued Then
+                SceneManager.CurrentScene?.FinializeReset(state)
+                SceneManager.ExecuteSceneChange(state)
+                isSceneChangeQueued = False
+            Else
+                SceneManager.CurrentScene?.RequestReset(state)
+                isSceneChangeQueued = True
+            End If
+        End If
     End Sub
 
     Private Sub PerformCollisionChecking(gameObjects As GameObjectCollection)
         For Each g In gameObjects
-            DirectCast(g.Collisions, List(Of CollisionInfo)).Clear()
+            If Not g.IsDestroyed Then DirectCast(g.Collisions, List(Of CollisionInfo)).Clear()
         Next
         For i = gameObjects.Count - 1 To 1 Step -1
             Dim current As GameObject = gameObjects(i)
@@ -169,9 +169,10 @@ Public Class RenderCanvas
                 If other.IsDestroyed OrElse Not other.CheckCollision Then Continue For
                 If currentBounds.Intersects(other.GetCollisionBounds) Then
                     Dim hitpoint = Mathf.GetPositionToward(current.Position, other.Position, currentBounds.Radius)
-                    Dim info As New CollisionInfo(current, other, hitpoint)
-                    DirectCast(current.Collisions, List(Of CollisionInfo)).Add(info)
-                    DirectCast(other.Collisions, List(Of CollisionInfo)).Add(info)
+                    Dim thisInfo As New CollisionInfo(current, other, hitpoint)
+                    Dim otherInfo As New CollisionInfo(other, current, hitpoint)
+                    DirectCast(current.Collisions, List(Of CollisionInfo)).Add(thisInfo)
+                    DirectCast(other.Collisions, List(Of CollisionInfo)).Add(otherInfo)
                 End If
             Next
         Next
