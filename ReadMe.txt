@@ -38,7 +38,7 @@ Getting Started:
 
 		Public Class Form1
 			Private Async Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
-				RenderCanvas1.SceneManager.Add(New MainScene)
+				RenderCanvas1.SceneManager.Add(New MainScene())
 				RenderCanvas1.SceneManager.ChangeScene("Main Scene")
 				Await RenderCanvas1.BeginAsync
 			End Sub
@@ -52,7 +52,7 @@ Getting Started:
 			Inherits GameScene
 
 			Public Sub New()
-				Me.Name = "Main Scene"
+				MyBase.New("Main Scene")
 			End Sub
 
 			Protected Overrides Sub Initialize(state As GameState)
