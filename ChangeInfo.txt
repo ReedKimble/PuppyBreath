@@ -1,0 +1,19 @@
+﻿[12/19/2020]
+
+(many changes have been pending for over a year, so this list is probably not exhaustive)
+(most changes should involve deprecating code with sensible backward compatibility for existing projects; there shouldn't be breaking changes, other than noted, but YMMV)
+
+[Change Log]
+	+ !BREAKING! Moved CollisionInfo into Collision namespace and AnimatedSprite into Animation namespace; you may need to add an Imports statement to existing code
+
+	+ GameScene Name replaced with Title, which is now required and defaults to a unique value
+
+	+ Collision moved into seperate namespace with classes for different collider shapes; old collision properties cause a circle collider to be created/configured
+
+	+ Sprite refactored into IRenderable interface to facilitate creation of AnimatedSprite
+
+	+ Adds RenderState to provide opportunity to bypass default rendering during Sprite.PreRender()
+
+	+ Corrected/completed XML help text in several places
+
+	+ Minor changes/corrections

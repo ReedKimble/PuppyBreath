@@ -3,6 +3,7 @@
 ''' </summary>
 ''' <author>Reed Kimble 01/08/2018</author>
 Public Class Mathf
+    Public Const EPSILON As Single = 0.01F
     Public Const ZERO As Single = 0.0F
     Public Const ONE As Single = 1.0F
     Public Const TWO As Single = 2.0F
@@ -76,6 +77,15 @@ Public Class Mathf
         Return CInt(Mathf.Max(min, Mathf.Min(value, max)))
     End Function
 
+    Public Shared Function Circumscribe(polygon As IEnumerable(Of PointF)) As Circle
+        Return Circumscribe(PolygonCentroid(polygon), polygon)
+    End Function
+
+    Public Shared Function Circumscribe(centroid As PointF, polygon As IEnumerable(Of PointF)) As Circle
+        Dim farthest = (Aggregate p In polygon Select Distance(centroid, p) Into Max)
+        Return New Circle(centroid, farthest)
+    End Function
+
     ''' <summary>
     ''' Gets the collision plane for a given normal plane.
     ''' </summary>
@@ -119,6 +129,26 @@ Public Class Mathf
     ''' <returns>The dot product of vectors one and two.</returns>
     Public Shared Function VectorDotProduct(vector1 As PointF, vector2 As PointF) As Single
         Return vector1.X * vector2.X + vector1.Y * vector2.Y
+    End Function
+
+    ''' <summary>
+    ''' Determines if two values are equal within a small margin (epsilon).
+    ''' </summary>
+    ''' <param name="source">The first number.</param>
+    ''' <param name="target">The second number.</param>
+    ''' <returns>True if the values are equal within the value of epsilon, otherwise false.</returns>
+    Public Shared Function EqualWithin(ByVal source As Single, ByVal target As Single) As Boolean
+        Return EqualWithin(source, target, EPSILON)
+    End Function
+
+    ''' <summary>
+    ''' Determines if two points are equal within a small margin (epsilon).
+    ''' </summary>
+    ''' <param name="source">The first point.</param>
+    ''' <param name="target">The second point.</param>
+    ''' <returns>True if the values are equal within the value of epsilon, otherwise false.</returns>
+    Public Shared Function EqualWithin(ByVal source As PointF, ByVal target As PointF) As Boolean
+        Return Distance(source, target) <= EPSILON
     End Function
 
     ''' <summary>
@@ -493,13 +523,14 @@ Public Class Mathf
     ''' <param name="polygon1">The points of the first polygon.</param>
     ''' <param name="polygon2">The points of the second polygon.</param>
     ''' <returns>True if the polygons intersect, otherwise false.</returns>
-    Public Shared Function IntersectPolygonPolygon(polygon1 As IEnumerable(Of PointF), polygon2 As IEnumerable(Of PointF)) As Boolean
+    Public Shared Function IntersectPolygonPolygon(polygon1 As IEnumerable(Of PointF), polygon2 As IEnumerable(Of PointF), ByRef intersection As PointF?) As Boolean
         For Each p In polygon1
-            If IsPointInPolygon(p, polygon2) Then Return True
+            If IsPointInPolygon(p, polygon2) Then intersection = p : Return True
         Next
         For Each p In polygon2
-            If IsPointInPolygon(p, polygon1) Then Return True
+            If IsPointInPolygon(p, polygon1) Then intersection = p : Return True
         Next
+        intersection = Nothing
         Return False
     End Function
 

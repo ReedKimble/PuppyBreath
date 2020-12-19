@@ -8,6 +8,9 @@ Public Class RenderCanvas
     ''' </summary>
     Public Event RenderingComplete As EventHandler
 
+    Public Property DebugColliderView As Boolean
+    Public Property DebugColliderViewColor As Color = Color.Fuchsia
+
     ''' <summary>
     ''' Gets or sets a value that determines if the control sets the text of its parent to the current frame rate.
     ''' </summary>
@@ -20,6 +23,7 @@ Public Class RenderCanvas
     ''' <returns>A value that indicates whether the game loop is running.</returns>
     Public ReadOnly Property IsRunning As Boolean
 
+    Public Property RandomSeed As Integer = CInt(Now.Ticks And &HFFFF)
 
     Public ReadOnly Property SceneManager As New GameSceneManager(Me)
 
@@ -41,7 +45,7 @@ Public Class RenderCanvas
         InitializeComponent()
 
         ' Add any initialization after the InitializeComponent() call.
-        If Not DesignMode Then state = New GameState
+        If Not DesignMode Then state = New GameState(Me)
     End Sub
 
     ''' <summary>
@@ -49,7 +53,7 @@ Public Class RenderCanvas
     ''' </summary>
     ''' <returns>A Task which wrapps the executing game loop.</returns>
     Public Async Function BeginAsync() As Task
-        If IsRunning Then Exit Function
+        If _IsRunning Then Exit Function
         _IsRunning = True
         rendererActive = True
         state.Audio.LoadResources()
@@ -58,8 +62,11 @@ Public Class RenderCanvas
                 Await Task.Delay(250)
                 Continue Do
             End If
-            OnUpdate()
-
+            Try
+                OnUpdate()
+            Catch ex As Exception
+                Throw
+            End Try
             Dim targetFrameTime As Single = CSng(1 / TargetFPS)
             Dim excessFrameTime As Single = targetFrameTime - state.Time.LastFrame
             Dim waitTime As Integer = CInt(excessFrameTime * 1000)
@@ -115,7 +122,6 @@ Public Class RenderCanvas
         MyBase.OnSizeChanged(e)
         If renderBuffer IsNot Nothing Then renderBuffer.Dispose()
         renderBuffer = BufferedGraphicsManager.Current.Allocate(CreateGraphics, New Rectangle(0, 0, Width, Height))
-        state?.SetBounds(ClientRectangle)
     End Sub
 
     Protected Overridable Sub OnUpdate()
@@ -132,13 +138,19 @@ Public Class RenderCanvas
                     scene.GameObjects.RemoveAt(i)
                     gameObject.FinializeDestruction(state)
                 ElseIf Not SceneManager.IsSceneChangeQueued Then
-                    gameObject.Update(state)
+                    If gameObject.Enabled Then gameObject.Update(state)
                 End If
             Next
             If Not SceneManager.IsSceneChangeQueued Then
-                PerformCollisionChecking(gameObjects)
-                For Each gobj In (From g In gameObjects Where TypeOf (g) Is Sprite Let s = DirectCast(g, Sprite) Where g.IsDestroyed = False Order By s.ZOrder Select s)
-                    gobj.Render(renderBuffer.Graphics, state)
+                PerformCollisionChecking(gameObjects, state.CollisionResolution)
+                For Each renderable In (From g In gameObjects Where g.Enabled AndAlso g.IsDestroyed = False AndAlso TypeOf (g) Is IRenderable Let s = DirectCast(g, IRenderable) Where s.Visible Order By s.ZOrder Select s)
+                    renderable.Render(renderBuffer.Graphics, state)
+                    If DebugColliderView Then
+                        Dim obj = DirectCast(renderable, GameObject)
+                        Using p As New Pen(DebugColliderViewColor)
+                            obj.Collider?.DebugDraw(p, renderBuffer.Graphics)
+                        End Using
+                    End If
                 Next
             End If
         End If
@@ -156,25 +168,31 @@ Public Class RenderCanvas
         End If
     End Sub
 
-    Private Sub PerformCollisionChecking(gameObjects As GameObjectCollection)
+    Private Sub PerformCollisionChecking(gameObjects As GameObjectCollection, resolution As Collision.CollisionResolution)
         For Each g In gameObjects
             If Not g.IsDestroyed Then DirectCast(g.Collisions, List(Of CollisionInfo)).Clear()
         Next
+        Dim collisionList As New HashSet(Of GameObject)
         For i = gameObjects.Count - 1 To 1 Step -1
             Dim current As GameObject = gameObjects(i)
-            Dim currentBounds = current.GetCollisionBounds
-            If current.IsDestroyed OrElse Not current.CheckCollision Then Continue For
+            If current.IsDestroyed OrElse Not current.Enabled OrElse Not current.HasCollision Then Continue For
             For j = i - 1 To 0 Step -1
                 Dim other As GameObject = gameObjects(j)
-                If other.IsDestroyed OrElse Not other.CheckCollision Then Continue For
-                If currentBounds.Intersects(other.GetCollisionBounds) Then
-                    Dim hitpoint = Mathf.GetPositionToward(current.Position, other.Position, currentBounds.Radius)
-                    Dim thisInfo As New CollisionInfo(current, other, hitpoint)
-                    Dim otherInfo As New CollisionInfo(other, current, hitpoint)
+                If other.IsDestroyed OrElse Not other.HasCollision Then Continue For
+                Dim hitpoint = resolution.Resolve(current.Collider, other.Collider)
+                If hitpoint.HasValue Then
+                    Dim thisInfo As New CollisionInfo(current, other, hitpoint.Value)
+                    Dim otherInfo As New CollisionInfo(other, current, hitpoint.Value)
                     DirectCast(current.Collisions, List(Of CollisionInfo)).Add(thisInfo)
                     DirectCast(other.Collisions, List(Of CollisionInfo)).Add(otherInfo)
                 End If
             Next
+            If current.Collisions.Count > 0 Then
+                If Not collisionList.Contains(current) Then collisionList.Add(current)
+            End If
+        Next
+        For Each g In collisionList
+            g.CollisionsOccured(state)
         Next
     End Sub
 
@@ -203,4 +221,5 @@ Public Class RenderCanvas
     Public Sub StopRenderer()
         rendererActive = False
     End Sub
+
 End Class

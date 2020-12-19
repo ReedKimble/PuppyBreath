@@ -10,6 +10,13 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <releaseNotes>
+      Update to PuppyBreath alpha 0.4.0.0.
+      [Update Notes]
+      See ChangeInfo.txt for details on the 0.4.0.0 update.
+      This version should be backward compatible with 0.3 projects, though some functionality
+      has been marked Obsolete and should be refactored in any future updates to your project.
+      
+      [*** Previous Changes ***]
       Update to PuppyBreath alpha 0.3.0.0.
       
       [Update Notes]
@@ -56,7 +63,7 @@
       + Added IsLoop property to animations to support a one-time animation.
         !# You may need to edit your code to provide an IsLoop variable value.
     </releaseNotes>
-    <copyright>Copyright 2018 Reed Kimble</copyright>
+    <copyright>Copyright 2018-2020 Reed Kimble</copyright>
     <tags>game-engine api framework windows-forms dotnet dot-net vb-net visual-basic gdi gdi-plus</tags>
   </metadata>
 </package>

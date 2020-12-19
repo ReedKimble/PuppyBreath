@@ -42,16 +42,17 @@ Public NotInheritable Class GameSceneManager
     End Sub
 
     Protected Overrides Function GetKeyForItem(item As GameScene) As String
-        Return item.Name
+        Return item.Title
     End Function
 
     Protected Overrides Sub InsertItem(index As Integer, item As GameScene)
-        If Contains(item.Name) Then Return
+        If Contains(item.Title) Then Return
         MyBase.InsertItem(index, item)
+        If Me.Count = 1 Then _CurrentScene = item
     End Sub
 
     Protected Overrides Sub SetItem(index As Integer, item As GameScene)
-        If Contains(item.Name) Then Return
+        If Contains(item.Title) Then Return
         MyBase.SetItem(index, item)
     End Sub
 End Class

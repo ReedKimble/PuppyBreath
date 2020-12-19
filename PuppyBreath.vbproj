@@ -69,12 +69,17 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnimatedSprite.vb" />
+    <Compile Include="Animation\AnimatedSprite.vb" />
     <Compile Include="Animation\MultiImageAnimation.vb" />
     <Compile Include="Animation\SpriteSheetAnimation.vb" />
     <Compile Include="Animation\AnimationCollection.vb" />
     <Compile Include="Circle.vb" />
-    <Compile Include="CollisionInfo.vb" />
+    <Compile Include="Collision\CircleCollider.vb" />
+    <Compile Include="Collision\CollisionInfo.vb" />
+    <Compile Include="Collision\ColliderBase.vb" />
+    <Compile Include="Collision\CollisionResolution.vb" />
+    <Compile Include="Collision\CollisionResolutionKey.vb" />
+    <Compile Include="Collision\PolygonCollider.vb" />
     <Compile Include="GameAudio.vb" />
     <Compile Include="GameAudioPlayer.vb" />
     <Compile Include="GameInput.vb" />
@@ -84,6 +89,7 @@
     <Compile Include="GameState.vb" />
     <Compile Include="GameTime.vb" />
     <Compile Include="Animation\IAnimation.vb" />
+    <Compile Include="IRenderable.vb" />
     <Compile Include="MathF.vb" />
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
@@ -108,6 +114,7 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GameSceneManager.vb" />
+    <Compile Include="RenderState.vb" />
     <Compile Include="Sprite.vb" />
     <Compile Include="VariableBank.vb" />
   </ItemGroup>
@@ -132,8 +139,10 @@
       <CustomToolNamespace>My</CustomToolNamespace>
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
+    <None Include="PuppyBreath.nuspec" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="ChangeInfo.txt" />
     <Content Include="License.txt" />
     <Content Include="ReadMe.txt" />
   </ItemGroup>

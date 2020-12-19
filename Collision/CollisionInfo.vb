@@ -7,13 +7,13 @@ Public Class CollisionInfo
     ''' Gets a reference to the game object on which the collision event occured.
     ''' </summary>
     ''' <returns>The game object on which collision occured.</returns>
-    Public ReadOnly Property Source As Sprite
+    Public ReadOnly Property Source As GameObject
 
     ''' <summary>
     ''' Gets a reference to the game object that the source collided with.
     ''' </summary>
     ''' <returns>The game object that collided with the source object.</returns>
-    Public ReadOnly Property Other As Sprite
+    Public ReadOnly Property Other As GameObject
 
     ''' <summary>
     ''' Gets the point of contact between the two game object colliders.
@@ -23,7 +23,7 @@ Public Class CollisionInfo
 
     '<dev>:
     ' The game engine will create CollisionInfo instances internally as the result of collision evaluation.
-    Protected Friend Sub New(sourceSprite As Sprite, otherSprite As Sprite, hit As PointF)
+    Protected Friend Sub New(sourceSprite As GameObject, otherSprite As GameObject, hit As PointF)
         Source = sourceSprite
         Other = otherSprite
         CollisionPoint = hit

@@ -11,6 +11,7 @@ Public NotInheritable Class GameInput
     Private currentKeyboardState As New Dictionary(Of Keys, Boolean)
     Private currentMouseButtonState As New Dictionary(Of MouseButtons, Boolean)
     Private currentMousePosition As PointF
+    Private namedButtonMap As New Dictionary(Of String, List(Of MouseButtons))
     Private namedKeyMap As New Dictionary(Of String, List(Of Keys))
     Private lastKeyboardState As New Dictionary(Of Keys, Boolean)
     Private lastMouseButtonState As New Dictionary(Of MouseButtons, Boolean)
@@ -43,6 +44,16 @@ Public NotInheritable Class GameInput
     End Function
 
     ''' <summary>
+    ''' Gets the list of mouse buttons mapped to a name in the buttonmap.
+    ''' </summary>
+    ''' <param name="name">The name of the mouse button list to get.</param>
+    ''' <returns>A list of mouse buttons mapped to the name.</returns>
+    Public Function GetButtonMap(name As String) As List(Of MouseButtons)
+        If Not namedButtonMap.ContainsKey(name) Then namedButtonMap(name) = New List(Of MouseButtons)
+        Return namedButtonMap(name)
+    End Function
+
+    ''' <summary>
     ''' The mouse position as of the last update.
     ''' </summary>
     ''' <returns>The mouse position as of the last update.</returns>
@@ -61,13 +72,16 @@ Public NotInheritable Class GameInput
     End Function
 
     ''' <summary>
-    ''' Gets a value indicating whether a key in the keymap is currently pressed.
+    ''' Gets a value indicating whether a key or button in the specified keymap is currently pressed.
     ''' </summary>
     ''' <param name="keyMapName">The name of the keymap to check.</param>
     ''' <returns>True if a key is currently pressed, otherwise false.</returns>
     Public Function IsKeyDown(keyMapName As String) As Boolean
         For Each k In GetKeyMap(keyMapName)
             If IsKeyDown(k) Then Return True
+        Next
+        For Each b In GetButtonMap(keyMapName)
+            If IsButtonDown(b) Then Return True
         Next
         Return False
     End Function
@@ -83,6 +97,14 @@ Public NotInheritable Class GameInput
     End Function
 
     ''' <summary>
+    ''' Removes the buttonmap for the specified name.
+    ''' </summary>
+    ''' <param name="name">The name of the buttonmap to remove.</param>
+    Public Sub RemoveButtonMap(name As String)
+        If namedButtonMap.ContainsKey(name) Then namedButtonMap.Remove(name)
+    End Sub
+
+    ''' <summary>
     ''' Removes the keymap for the specified name.
     ''' </summary>
     ''' <param name="name">The name of the keymap to remove.</param>
@@ -91,7 +113,7 @@ Public NotInheritable Class GameInput
     End Sub
 
     ''' <summary>
-    ''' Gets a value indicating whether a button is was pressed and released on the last frame.
+    ''' Gets a value indicating whether a button was pressed and released on the last frame.
     ''' </summary>
     ''' <param name="button">The button to check.</param>
     ''' <returns>True if the button was pressed, otherwise false.</returns>
@@ -103,19 +125,22 @@ Public NotInheritable Class GameInput
     End Function
 
     ''' <summary>
-    ''' Gets a value indicating whether a key in a keymap is was pressed and released on the last frame.
+    ''' Gets a value indicating whether a key or button with the specified keyMapName was pressed and released on the last frame.
     ''' </summary>
     ''' <param name="keyMapName">The name of the keymap to check.</param>
-    ''' <returns>True if the key was pressed, otherwise false.</returns>
+    ''' <returns>True if the key or button was pressed, otherwise false.</returns>
     Public Function WasKeyPressed(keyMapName As String) As Boolean
         For Each k In GetKeyMap(keyMapName)
             If WasKeyPressed(k) Then Return True
+        Next
+        For Each b In GetButtonMap(keyMapName)
+            If WasButtonPressed(b) Then Return True
         Next
         Return False
     End Function
 
     ''' <summary>
-    ''' Gets a value indicating whether a key is was pressed and released on the last frame.
+    ''' Gets a value indicating whether a key was pressed and released on the last frame.
     ''' </summary>
     ''' <param name="key">The key to check.</param>
     ''' <returns>True if the key was pressed, otherwise false.</returns>

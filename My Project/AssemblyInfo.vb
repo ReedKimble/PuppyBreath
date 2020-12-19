@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("A simplistic and robust video game engine for .Net Windows Forms, based entirely on managed code and GDI+ graphics (authored in Visual Basic .Net).")>
 <Assembly: AssemblyCompany("Reed Kimble")>
 <Assembly: AssemblyProduct("PuppyBreath")>
-<Assembly: AssemblyCopyright("Copyright © Reed Kimble 2018")>
+<Assembly: AssemblyCopyright("Copyright © Reed Kimble 2018-2020")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' by using the '*' as shown below:
 ' <Assembly: AssemblyVersion("1.0.*")>
 
-<Assembly: AssemblyVersion("0.3.0.0")>
-<Assembly: AssemblyFileVersion("0.3.0.0")>
+<Assembly: AssemblyVersion("0.4.0.0")>
+<Assembly: AssemblyFileVersion("0.4.0.0")>
